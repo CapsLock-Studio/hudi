@@ -48,6 +48,11 @@ public class DebeziumConstants {
   public static final String INCOMING_SOURCE_LSN_FIELD = "source.lsn";
   public static final String INCOMING_SOURCE_XMIN_FIELD = "source.xmin";
 
+  // INPUT COLUMNS SPECIFIC TO SQLSERVER
+  public static final String INCOMING_SOURCE_CHANGE_LSN_FIELD = "source.change_lsn";
+  public static final String INCOMING_SOURCE_COMMIT_LSN_FIELD = "source.commit_lsn";
+  public static final String INCOMING_SOURCE_EVENT_SERIAL_NO_FIELD = "source.event_serial_no";
+
   // OUTPUT COLUMNS
   public static final String FLATTENED_OP_COL_NAME = "_change_operation_type";
   public static final String UPSTREAM_PROCESSING_TS_COL_NAME = "_upstream_event_processed_ts_ms";
@@ -65,6 +70,11 @@ public class DebeziumConstants {
   // OUTPUT COLUMNS SPECIFIC TO POSTGRES
   public static final String FLATTENED_LSN_COL_NAME = "_event_lsn";
   public static final String FLATTENED_XMIN_COL_NAME = "_event_xmin";
+
+  // OUTPUT COLUMNS SPECIFIC TO SQLSERVER
+  public static final String FLATTENED_CHANGE_LSN_COL_NAME = "_event_xmin";
+  public static final String FLATTENED_COMMIT_LSN_COL_NAME = "_event_commit_lsn";
+  public static final String FLATTENED_EVENT_SERIAL_NO_COL_NAME = "_event_event_serial_no";
 
   // Other Constants
   public static final String DELETE_OP = "d";
