@@ -57,6 +57,10 @@ public class SqlQueryBasedTransformer implements Transformer {
       throw new IllegalArgumentException("Missing configuration : (" + Config.TRANSFORMER_SQL + ")");
     }
 
+    if (rowDataset.isEmpty()) {
+      return rowDataset;
+    }
+
     // tmp table name doesn't like dashes
     String tmpTable = TMP_TABLE.concat(UUID.randomUUID().toString().replace("-", "_"));
     LOG.info("Registering tmp table : " + tmpTable);
