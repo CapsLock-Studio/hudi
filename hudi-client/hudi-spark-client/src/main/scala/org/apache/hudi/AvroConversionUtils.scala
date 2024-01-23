@@ -120,7 +120,8 @@ object AvroConversionUtils {
     if (rdd.isEmpty()) {
       ss.emptyDataFrame
     } else {
-      ss.createDataFrame(rdd.mapPartitions { records =>
+      val filteredRDD = rdd.filter(_ != null)
+      ss.createDataFrame(filteredRDD.mapPartitions { records =>
         if (records.isEmpty) Iterator.empty
         else {
           val schema = new Schema.Parser().parse(schemaStr)
