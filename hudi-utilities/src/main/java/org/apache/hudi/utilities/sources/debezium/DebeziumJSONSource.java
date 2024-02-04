@@ -20,6 +20,7 @@ package org.apache.hudi.utilities.sources.debezium;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,7 @@ import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.types.DataTypes;
@@ -162,19 +164,36 @@ public abstract class DebeziumJSONSource extends RowSource {
 
   public static Dataset<Row> convertStructColumns(Dataset<Row> dataset) {
     schema = dataset.schema();
-    String afterField = DebeziumConstants.INCOMING_AFTER_FIELD;
-    String beforeField = DebeziumConstants.INCOMING_BEFORE_FIELD;
+    String afterFieldName = DebeziumConstants.INCOMING_AFTER_FIELD;
+    String beforeFieldName = DebeziumConstants.INCOMING_BEFORE_FIELD;
 
-    boolean isAfterFieldStruct = isFieldStructType(schema, afterField);
-    boolean isBeforeFieldStruct = isFieldStructType(schema, beforeField);
+    boolean isAfterFieldStruct = isFieldStructType(schema, afterFieldName);
+    boolean isBeforeFieldStruct = isFieldStructType(schema, beforeFieldName);
 
     // Make sure the schema has the same schema for union data.
     if (isAfterFieldStruct && !isBeforeFieldStruct) {
-      dataset = dataset.withColumn(beforeField, functions.lit(null).cast(schema.apply(afterField).dataType()));
+      dataset = dataset.withColumn(beforeFieldName, functions.lit(null).cast(schema.apply(afterFieldName).dataType()));
     } else if (!isAfterFieldStruct && isBeforeFieldStruct) {
-      dataset = dataset.withColumn(afterField, functions.lit(null).cast(schema.apply(beforeField).dataType()));
+      dataset = dataset.withColumn(afterFieldName, functions.lit(null).cast(schema.apply(beforeFieldName).dataType()));
     } else if (isAfterFieldStruct && isBeforeFieldStruct) {
-      dataset = dataset.withColumn(beforeField, dataset.col(beforeField).cast(schema.apply(afterField).dataType()));
+      StructType beforeSchema = (StructType) dataset.schema().apply(beforeFieldName).dataType();
+      StructType afterSchema = (StructType) dataset.schema().apply(afterFieldName).dataType();
+
+      // Collect existing 'before' columns and add missing ones with null values
+      List<Column> beforeColumns = new ArrayList<>();
+      for (StructField beforeField : beforeSchema.fields()) {
+        beforeColumns.add(functions.col("before." + beforeField.name()));
+      }
+      for (StructField afterField : afterSchema.fields()) {
+        if (!Arrays.asList(beforeSchema.fieldNames()).contains(afterField.name())) {
+          beforeColumns.add(functions.lit(null).alias(afterField.name()));
+        }
+      }
+
+      // Reconstruct 'before' column with added missing fields
+      Column beforeStruct = functions.struct(beforeColumns.toArray(new Column[0])).alias("before");
+
+      dataset = dataset.withColumn(beforeFieldName, beforeStruct);
     }
 
     return dataset;
