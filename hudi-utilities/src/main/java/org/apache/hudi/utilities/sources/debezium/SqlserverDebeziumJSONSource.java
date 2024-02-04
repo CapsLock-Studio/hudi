@@ -62,7 +62,7 @@ public class SqlserverDebeziumJSONSource extends DebeziumJSONSource {
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_TS_MS_FIELD, DebeziumConstants.FLATTENED_TS_COL_NAME),
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_CHANGE_LSN_FIELD, DebeziumConstants.FLATTENED_CHANGE_LSN_COL_NAME),
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_COMMIT_LSN_FIELD, DebeziumConstants.FLATTENED_COMMIT_LSN_COL_NAME),
-              String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_EVENT_SERIAL_NO_FIELD, DebeziumConstants.FLATTENED_EVENT_SERIAL_NO_COL_NAME),
+              String.format("CAST(%s AS LONG) AS %s", DebeziumConstants.INCOMING_SOURCE_EVENT_SERIAL_NO_FIELD, DebeziumConstants.FLATTENED_EVENT_SERIAL_NO_COL_NAME),
               String.format("%s.*", DebeziumConstants.INCOMING_AFTER_FIELD)
           )
           .filter(rowDataset.col(DebeziumConstants.INCOMING_OP_FIELD).notEqual(DebeziumConstants.DELETE_OP));
@@ -76,7 +76,7 @@ public class SqlserverDebeziumJSONSource extends DebeziumJSONSource {
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_TS_MS_FIELD, DebeziumConstants.FLATTENED_TS_COL_NAME),
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_CHANGE_LSN_FIELD, DebeziumConstants.FLATTENED_CHANGE_LSN_COL_NAME),
               String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_COMMIT_LSN_FIELD, DebeziumConstants.FLATTENED_COMMIT_LSN_COL_NAME),
-              String.format("%s as %s", DebeziumConstants.INCOMING_SOURCE_EVENT_SERIAL_NO_FIELD, DebeziumConstants.FLATTENED_EVENT_SERIAL_NO_COL_NAME),
+              String.format("CAST(%s AS LONG) AS %s", DebeziumConstants.INCOMING_SOURCE_EVENT_SERIAL_NO_FIELD, DebeziumConstants.FLATTENED_EVENT_SERIAL_NO_COL_NAME),
               String.format("%s.*", DebeziumConstants.INCOMING_BEFORE_FIELD)
           )
           .filter(rowDataset.col(DebeziumConstants.INCOMING_OP_FIELD).equalTo(DebeziumConstants.DELETE_OP));
