@@ -26,7 +26,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import static org.apache.spark.sql.functions.lit;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -47,18 +50,31 @@ public class SqlQueryBasedTransformer implements Transformer {
   static class Config {
 
     private static final String TRANSFORMER_SQL = "hoodie.deltastreamer.transformer.sql";
+    private static final String ALLOWED_EMPTY_FIELDS = "hoodie.deltastreamer.transformer.allowed_empty_fields";
   }
 
   @Override
   public Dataset<Row> apply(JavaSparkContext jsc, SparkSession sparkSession, Dataset<Row> rowDataset,
       TypedProperties properties) {
     String transformerSQL = properties.getString(Config.TRANSFORMER_SQL);
+    String allowedEmptyFieldsStr = properties.getString(Config.ALLOWED_EMPTY_FIELDS);
     if (null == transformerSQL) {
       throw new IllegalArgumentException("Missing configuration : (" + Config.TRANSFORMER_SQL + ")");
     }
 
     if (rowDataset.isEmpty()) {
       return rowDataset;
+    }
+
+    if (allowedEmptyFieldsStr != null && !allowedEmptyFieldsStr.equals("")) {
+      String[] allowedEmptyFields = allowedEmptyFieldsStr.replace(" ", "").split(",");
+      for (String col : allowedEmptyFields) {
+        // Check if the DataFrame does not contain the column
+        if (!Arrays.asList(rowDataset.columns()).contains(col)) {
+          // Add the missing column with null values
+          rowDataset = rowDataset.withColumn(col, lit(null).cast(DataTypes.StringType));
+        }
+      }
     }
 
     // tmp table name doesn't like dashes
